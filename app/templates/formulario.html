@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Checklist de Inspeção</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .aba-section {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .aba-title {
+            background-color: #4a0082;
+            color: white;
+            padding: 10px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 5px 5px 0 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .radio-group {
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 5px;
+        }
+        button {
+            background-color: #4a0082;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #6a009f;
+        }
+    </style>
+</head>
+<body>
+    <h1>Formulário de Inspeção</h1>
+    <form action="/enviar" method="post">
+        {% set current_aba = namespace(name='') %}
+        {% for item in itens %}
+            {% if item.aba != current_aba.name %}
+                {% if current_aba.name != '' %}
+                    </table>
+                    </div>
+                {% endif %}
+                {% set current_aba.name = item.aba %}
+                <div class="aba-section">
+                    <h2 class="aba-title">{{ item.aba }}</h2>
+                    <table>
+                        <tr>
+                            <th>Equipamento</th>
+                            <th>Quantidade</th>
+                            <th>Atividade</th>
+                            <th>Status</th>
+                            <th>Justificativa</th>
+                        </tr>
+            {% endif %}
+            <tr>
+                <td>{{ item.equipamento }}</td>
+                <td>{{ item.quantidade }}</td>
+                <td>{{ item.atividade }}</td>
+                <td>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="status_{{ loop.index }}" value="OK" required> OK
+                        </label>
+                        <label>
+                            <input type="radio" name="status_{{ loop.index }}" value="NOK" required> NOK
+                        </label>
+                    </div>
+                </td>
+                <td>
+                    <input type="text" name="just_{{ loop.index }}" placeholder="Adicione uma justificativa se necessário">
+                    <input type="hidden" name="equipamento_{{ loop.index }}" value="{{ item.equipamento }}">
+                    <input type="hidden" name="aba_{{ loop.index }}" value="{{ item.aba }}">
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+        </div>
+        <button type="submit">Salvar Inspeção</button>
+    </form>
+</body>
+</html>
