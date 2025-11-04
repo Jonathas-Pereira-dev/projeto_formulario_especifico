@@ -5,6 +5,54 @@
     <title>Checklist de Inspeção</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
+        .nav-tabs {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+            border-bottom: 2px solid #e0e0e0;
+            overflow-x: auto;
+        }
+        
+        .nav-tabs li {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .nav-tab {
+            display: block;
+            padding: 12px 20px;
+            color: #1f2937; /* texto escuro */
+            text-decoration: none;
+            border: 2px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 4px;
+            background: #ffffff;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.18s ease;
+        }
+        
+        .nav-tab:hover {
+            background: #f8fafc;
+            border-color: #0a84ff;
+        }
+        
+        .nav-tab.active {
+            background: #0a84ff;
+            color: white;
+            border-color: #0a84ff;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         .aba-section {
             margin-bottom: 30px;
             border: 1px solid #ddd;
@@ -12,11 +60,12 @@
             border-radius: 5px;
         }
         .aba-title {
-            background-color: #4a0082;
-            color: white;
+            background-color: #ffffff;
+            color: #0f172a;
             padding: 10px;
             margin: -20px -20px 20px -20px;
             border-radius: 5px 5px 0 0;
+            border-bottom: 1px solid #e6eef9;
         }
         table {
             width: 100%;
@@ -40,44 +89,68 @@
             padding: 5px;
         }
         button {
-            background-color: #4a0082;
+            background-color: #0a84ff;
             color: white;
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            box-shadow: 0 2px 6px rgba(10,132,255,0.18);
         }
         button:hover {
-            background-color: #6a009f;
+            background-color: #0070e0;
         }
     </style>
+    <!-- Script de troca de abas removido: navegação agora usa rotas server-side -->
 </head>
 <body>
     <h1>Formulário de Inspeção</h1>
+    {% if not itens %}
+        <div style="max-width:1000px;margin:20px auto;padding:20px;background:#fff;border:1px solid #e6eef9;border-radius:8px;color:#0f172a;text-align:center;">
+            <strong>Nenhum item encontrado</strong>
+            <div>Não foram localizados itens para esta aba. Verifique se a planilha contém a aba "INSPEÇÃO VISUAL" ou confirme o nome da folha.</div>
+        </div>
+    {% endif %}
+    
+    <ul class="nav-tabs">
+        <li><a class="nav-tab {% if aba_id == '1' %}active{% endif %}" href="/formulario/1">1. VERIFICAÇÃO E INSPEÇÃO MEC.</a></li>
+        <li><a class="nav-tab {% if aba_id == '2' %}active{% endif %}" href="/formulario/2">2. INSPEÇÃO VISUAL</a></li>
+        <li><a class="nav-tab {% if aba_id == '3' %}active{% endif %}" href="/formulario/3">3. VALIDAÇÃO DE CIRCUITO</a></li>
+        <li><a class="nav-tab {% if aba_id == '4' %}active{% endif %}" href="/formulario/4">4. ATERRAMENTO</a></li>
+        <li><a class="nav-tab {% if aba_id == '5' %}active{% endif %}" href="/formulario/5">5. DESEMPENHO DO SISTEMA</a></li>
+        <li><a class="nav-tab {% if aba_id == '6' %}active{% endif %}" href="/formulario/6">6. PROCEDIMENTO VERIFICAÇÃO CLP</a></li>
+    </ul>
+
     <form action="/enviar" method="post">
-        {% set current_aba = namespace(name='') %}
+        {% set current_section = namespace(name='') %}
         {% for item in itens %}
-            {% if item.aba != current_aba.name %}
-                {% if current_aba.name != '' %}
+            {% if item.aba != current_section.name %}
+                {% if current_section.name != '' %}
                     </table>
                     </div>
                 {% endif %}
-                {% set current_aba.name = item.aba %}
+
+                {% set current_section.name = item.aba %}
                 <div class="aba-section">
                     <h2 class="aba-title">{{ item.aba }}</h2>
                     <table>
                         <tr>
-                            <th>Equipamento</th>
-                            <th>Quantidade</th>
-                            <th>Atividade</th>
-                            <th>Status</th>
-                            <th>Justificativa</th>
+                            {# Exibe cabeçalhos dinâmicos se fornecidos, caso contrário usa rótulos padrão #}
+                            {% set hdrs = headers if headers else ['Sensor', 'Sinal', 'Local Instalado', 'Teste Realizado'] %}
+                            {% for h in hdrs[:4] %}
+                                <th>{{ h }}</th>
+                            {% endfor %}
+                            <th>OK</th>
+                            <th>NOK</th>
+                            <th>Observações / Justificativa</th>
                         </tr>
             {% endif %}
+
             <tr>
-                <td>{{ item.equipamento }}</td>
-                <td>{{ item.quantidade }}</td>
-                <td>{{ item.atividade }}</td>
+                <td>{{ item.coluna_1 }}</td>
+                <td>{{ item.coluna_2 }}</td>
+                <td>{{ item.coluna_3 }}</td>
+                <td>{{ item.coluna_4 if item.coluna_4 is defined else '' }}</td>
                 <td>
                     <div class="radio-group">
                         <label>
@@ -90,13 +163,18 @@
                 </td>
                 <td>
                     <input type="text" name="just_{{ loop.index }}" placeholder="Adicione uma justificativa se necessário">
-                    <input type="hidden" name="equipamento_{{ loop.index }}" value="{{ item.equipamento }}">
+                    <input type="hidden" name="equipamento_{{ loop.index }}" value="{{ item.coluna_1 }}">
                     <input type="hidden" name="aba_{{ loop.index }}" value="{{ item.aba }}">
                 </td>
             </tr>
         {% endfor %}
-        </table>
-        </div>
+
+        {# Fecha quaisquer tabelas abertas #}
+        {% if current_section.name != '' %}
+            </table>
+            </div>
+        {% endif %}
+
         <button type="submit">Salvar Inspeção</button>
     </form>
 </body>

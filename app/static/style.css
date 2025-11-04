@@ -1,96 +1,166 @@
-:root{
-    --radix-purple: #4a0082; /* tom base usado anteriormente */
-    --radix-purple-dark: #6a009f;
-    --content-bg: rgba(255,255,255,0.95);
+:root {
+    /* Tema claro com fundo cinza suave */
+    --bg-primary: #f3f4f6; /* fundo principal: cinza claro */
+    --bg-secondary: #ffffff; /* superfícies/cabeçalhos: branco */
+    --bg-tertiary: #ffffff; /* fundos de cards/tabelas: branco */
+    --text-primary: #0f172a; /* texto escuro */
+    --text-secondary: #475569; /* texto secundário */
+    --accent-color: #0a84ff; /* azul para acentos / botões */
+    --accent-hover: #0070e0;
+    --border-color: #e6eef9; /* bordas suaves */
+    --success-color: #2e7d32;
+    --error-color: #d32f2f;
+    --card-bg: #ffffff; /* cards brancos sobre fundo cinza */
+    --shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
 }
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
-    /* Fundo roxo estilo Radix: gradiente suave */
-    background: linear-gradient(135deg, var(--radix-purple) 0%, var(--radix-purple-dark) 100%);
-    color: #222;
 }
 
+/* Cabeçalho */
 h1 {
-    color: #ffffff;
+    color: var(--text-primary);
     text-align: center;
-    margin-bottom: 30px;
-    text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+    margin: 0;
+    padding: 24px;
+    font-size: 2em;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    background: var(--bg-secondary);
+    box-shadow: var(--shadow);
 }
 
+/* Cards e Seções */
 .aba-section {
-    background-color: var(--content-bg);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-    margin-bottom: 30px;
-    border-left: 6px solid var(--radix-purple);
-    border-radius: 6px;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    margin-bottom: 24px;
     overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
+.aba-title {
+    background: var(--bg-secondary);
+    color: var(--accent-color);
+    padding: 16px 24px;
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 500;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Tabelas */
 table {
     width: 100%;
     border-collapse: collapse;
-    background-color: transparent;
-}
-
-th, td {
-    padding: 12px;
-    text-align: left;
-    border: 1px solid #eee;
-    background-color: #fff; /* garante legibilidade dentro do content box */
+    background: var(--bg-tertiary);
 }
 
 th {
-    background-color: #fafafa;
-    font-weight: bold;
-    color: #333;
+    background: var(--bg-secondary);
+    color: var(--accent-color);
+    padding: 16px;
+    text-align: left;
+    font-weight: 500;
+    border-bottom: 1px solid var(--border-color);
+}
+
+td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
 }
 
 tr:hover {
-    background-color: #f8f9fa;
+    background: var(--bg-secondary);
 }
 
+/* Formulários */
 input[type="text"] {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 12px;
+    border-radius: 6px;
     width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    transition: all 0.3s ease;
 }
 
+input[type="text"]:focus {
+    border-color: var(--accent-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+/* Radio buttons */
 .radio-group {
     display: flex;
-    gap: 15px;
-    justify-content: center;
+    gap: 16px;
+    justify-content: flex-start;
+    align-items: center;
 }
 
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 16px;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+    color: var(--text-primary);
+}
+
+.radio-group label:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Botões */
 button {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
     display: block;
     width: 220px;
     margin: 20px auto;
-    padding: 12px;
-    background-color: var(--radix-purple);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    box-shadow: 0 6px 12px rgba(74,0,130,0.18);
 }
 
 button:hover {
-    background-color: var(--radix-purple-dark);
+    background: var(--accent-hover);
+    transform: translateY(-2px);
 }
 
-.justificativa {
-    min-width: 200px;
+button:active {
+    transform: translateY(0);
 }
 
+/* Responsividade */
 @media (max-width: 768px) {
-    body {
-        padding: 10px;
+    .container {
+        padding: 16px;
     }
     
     table {
@@ -98,6 +168,34 @@ button:hover {
     }
     
     th, td {
-        padding: 8px;
+        padding: 12px;
     }
+    
+    .radio-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    button {
+        width: 100%;
+    }
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-hover);
 }

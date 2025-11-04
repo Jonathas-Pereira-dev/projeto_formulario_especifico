@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Seleção de Testes - Radix</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .grid-item {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 200px;
+        }
+
+        .grid-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .grid-item h2 {
+            color: var(--primary-color);
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+        }
+
+        .grid-item p {
+            color: var(--text-color);
+            margin: 0 0 20px 0;
+            flex-grow: 1;
+        }
+
+        .item-count {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        .logo-container img {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+
+        .theme-switch {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-switch label {
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 15px;
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-switch">
+        <label>
+            <input type="checkbox" id="darkMode" onchange="toggleTheme()">
+            Modo Dark
+        </label>
+    </div>
+
+    <div class="logo-container">
+        <h1>Sistema de Inspeção - Radix</h1>
+        <p>Selecione uma categoria de testes para começar</p>
+    </div>
+
+    <div class="grid-container">
+        {% for aba in abas %}
+        <a href="/formulario/{{ aba.id }}" class="grid-item">
+            <div>
+                <h2>{{ aba.titulo }}</h2>
+                <p>{{ aba.descricao }}</p>
+            </div>
+            <span class="item-count">{{ aba.total_itens }} itens para verificação</span>
+        </a>
+        {% endfor %}
+    </div>
+
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            localStorage.setItem('darkMode', isDark);
+        }
+
+        // Carrega o tema salvo
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.add('dark-theme');
+                document.getElementById('darkMode').checked = true;
+            }
+        });
+    </script>
+</body>
+</html>
