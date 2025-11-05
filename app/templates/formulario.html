@@ -5,89 +5,88 @@
     <title>Checklist de Inspeção</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
+        body {
+            background-color: #000000; /* ✅ fundo preto */
+            color: #ffffff; /* texto branco */
+            font-family: Arial, sans-serif;
+        }
+
         .nav-tabs {
             display: flex;
             list-style: none;
             padding: 0;
             margin: 0 0 20px 0;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 2px solid #333;
             overflow-x: auto;
         }
         
-        .nav-tabs li {
-            margin: 0;
-            padding: 0;
-        }
+        .nav-tabs li { margin: 0; padding: 0; }
         
         .nav-tab {
             display: block;
             padding: 12px 20px;
-            color: #1f2937; /* texto escuro */
+            color: #ffffff;
             text-decoration: none;
             border: 2px solid transparent;
             border-bottom: none;
             border-radius: 4px 4px 0 0;
             margin-right: 4px;
-            background: #ffffff;
+            background: #1f1f1f;
             cursor: pointer;
-            white-space: nowrap;
             transition: all 0.18s ease;
         }
-        
+
         .nav-tab:hover {
-            background: #f8fafc;
+            background: #333333;
             border-color: #0a84ff;
         }
-        
+
         .nav-tab.active {
             background: #0a84ff;
             color: white;
             border-color: #0a84ff;
         }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
+
         .aba-section {
-            margin-bottom: 30px;
-            border: 1px solid #ddd;
+            background: #121212;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 8px;
             padding: 20px;
-            border-radius: 5px;
+            margin-bottom: 30px;
         }
-        .aba-title {
-            background-color: #ffffff;
-            color: #0f172a;
-            padding: 10px;
-            margin: -20px -20px 20px -20px;
-            border-radius: 5px 5px 0 0;
-            border-bottom: 1px solid #e6eef9;
-        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
+
         th, td {
-            border: 1px solid #ddd;
+            border: 1px solid #444;
             padding: 8px;
             text-align: left;
         }
+
         th {
-            background-color: #f4f4f4;
+            background-color: #1e1e1e;
+            color: #ffffff;
         }
+
         .radio-group {
             display: flex;
             gap: 10px;
         }
+
         input[type="text"] {
             width: 100%;
             padding: 5px;
+            background: #222;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 4px;
         }
+
         button {
             background-color: #0a84ff;
             color: white;
@@ -95,20 +94,21 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(10,132,255,0.18);
+            box-shadow: 0 2px 6px rgba(10,132,255,0.3);
         }
+
         button:hover {
             background-color: #0070e0;
         }
     </style>
-    <!-- Script de troca de abas removido: navegação agora usa rotas server-side -->
 </head>
 <body>
     <h1>Formulário de Inspeção</h1>
+
     {% if not itens %}
-        <div style="max-width:1000px;margin:20px auto;padding:20px;background:#fff;border:1px solid #e6eef9;border-radius:8px;color:#0f172a;text-align:center;">
+        <div style="max-width:1000px;margin:20px auto;padding:20px;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff;text-align:center;">
             <strong>Nenhum item encontrado</strong>
-            <div>Não foram localizados itens para esta aba. Verifique se a planilha contém a aba "INSPEÇÃO VISUAL" ou confirme o nome da folha.</div>
+            <div>Não foram localizados itens para esta aba.</div>
         </div>
     {% endif %}
     
@@ -132,14 +132,12 @@
 
                 {% set current_section.name = item.aba %}
                 <div class="aba-section">
-                    <h2 class="aba-title">{{ item.aba }}</h2>
+                    <h2>{{ item.aba }}</h2>
                     <table>
                         <tr>
-                            {# Exibe cabeçalhos dinâmicos se fornecidos, caso contrário usa rótulos padrão #}
-                            {% set hdrs = headers if headers else ['Sensor', 'Sinal', 'Local Instalado', 'Teste Realizado'] %}
-                            {% for h in hdrs[:4] %}
-                                <th>{{ h }}</th>
-                            {% endfor %}
+                            <th>Equipamento</th>
+                            <th>Quantidade</th>
+                            <th>Teste Realizado</th>
                             <th>OK</th>
                             <th>NOK</th>
                             <th>Observações / Justificativa</th>
@@ -150,16 +148,11 @@
                 <td>{{ item.coluna_1 }}</td>
                 <td>{{ item.coluna_2 }}</td>
                 <td>{{ item.coluna_3 }}</td>
-                <td>{{ item.coluna_4 if item.coluna_4 is defined else '' }}</td>
                 <td>
-                    <div class="radio-group">
-                        <label>
-                            <input type="radio" name="status_{{ loop.index }}" value="OK" required> OK
-                        </label>
-                        <label>
-                            <input type="radio" name="status_{{ loop.index }}" value="NOK" required> NOK
-                        </label>
-                    </div>
+                    <input type="radio" name="status_{{ loop.index }}" value="OK" required>
+                </td>
+                <td>
+                    <input type="radio" name="status_{{ loop.index }}" value="NOK" required>
                 </td>
                 <td>
                     <input type="text" name="just_{{ loop.index }}" placeholder="Adicione uma justificativa se necessário">
@@ -169,7 +162,6 @@
             </tr>
         {% endfor %}
 
-        {# Fecha quaisquer tabelas abertas #}
         {% if current_section.name != '' %}
             </table>
             </div>

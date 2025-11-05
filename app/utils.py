@@ -1,7 +1,11 @@
 import pandas as pd
 
 MAPEAMENTO_ABAS = {
-    "1": {"titulo": "VERIFICAÇÃO E INSPEÇÃO MEC.", "descricao": "Análise mecânica e verificação de componentes"},
+    "1": {
+        "titulo": "VERIFICAÇÃO E INSPEÇÃO MEC.",
+        "descricao": "Análise mecânica e verificação de componentes",
+        "colunas": ["Equipamento", "Quantidade", "Teste Realizado", "Observações / Justificativa"]
+    },
     "2": {"titulo": "INSPEÇÃO VISUAL", "descricao": "Inspeção visual detalhada dos elementos", "colunas": ["Equipamento", "Quantidade", "Inspeção"]},
     "3": {"titulo": "VALIDAÇÃO DE CIRCUITO", "descricao": "Verificação e validação dos circuitos elétricos", "colunas": ["Circuito", "Pontos de Teste", "Validação"]},
     "4": {"titulo": "ATERRAMENTO", "descricao": "Testes e verificação do sistema de aterramento", "colunas": ["Ponto", "Resistência", "Medição"]},
@@ -36,7 +40,7 @@ def carregar_abas(caminho_planilha):
                     'id': aba_id,
                     'titulo': nome_aba,
                     'descricao': info["descricao"],
-                    'total_itens': total_itens - 1  # Subtrai a linha de cabeçalho
+                    'total_itens': total_itens - 1
                 })
                 break
     
@@ -45,36 +49,48 @@ def carregar_abas(caminho_planilha):
 def carregar_itens(caminho_planilha, aba_id=None):
     xlsx = pd.ExcelFile(caminho_planilha)
 
-    def processar_sheet(nome_aba):
+    def processar_sheet(nome_aba, aba_id=None):
         df = pd.read_excel(caminho_planilha, sheet_name=nome_aba)
         cabecalho_idx = encontrar_cabecalho(df)
 
-        header_names = []
-        if cabecalho_idx is not None and cabecalho_idx >= 0 and cabecalho_idx < len(df):
-            header_row = df.iloc[cabecalho_idx]
-            # Extrai nomes de cabeçalho das células identificadas
-            header_names = [str(x).strip() for x in header_row.tolist() if pd.notna(x)]
-            # os dados reais começam na linha seguinte
-            df_dados = df.iloc[cabecalho_idx + 1 :].reset_index(drop=True)
+        # --- ✅ ABA 1 CORRIGIDA: Mantém apenas as colunas necessárias ---
+        if aba_id == "1":
+            header_names = ["Equipamento", "Quantidade", "Teste Realizado", "OK", "NOK", "Observações / Justificativa"]
+
+            # Remove linhas acima e repetições do cabeçalho
+            if cabecalho_idx is not None and 0 <= cabecalho_idx < len(df):
+                df_dados = df.iloc[cabecalho_idx + 1:].reset_index(drop=True)
+            else:
+                df_dados = df.reset_index(drop=True)
+
+            df_dados = df_dados[
+                ~df_dados.iloc[:, 0].astype(str).str.contains("EQUIPAMENTO", case=False, na=False)
+            ]
+
+            # ✅ Mantém só as 3 primeiras colunas úteis
+            df_dados = df_dados.iloc[:, :3]
+            df_dados.columns = ["Equipamento", "Quantidade", "Teste Realizado"]
+
         else:
-            # Usa o cabeçalho do DataFrame (caso as colunas já estejam nomeadas)
-            header_names = [str(c) for c in df.columns[:6]]
-            df_dados = df.reset_index(drop=True)
+            header_names = []
+            if cabecalho_idx is not None and 0 <= cabecalho_idx < len(df):
+                header_row = df.iloc[cabecalho_idx]
+                header_names = [str(x).strip() for x in header_row.tolist() if pd.notna(x)]
+                df_dados = df.iloc[cabecalho_idx + 1:].reset_index(drop=True)
+            else:
+                header_names = [str(c) for c in df.columns[:6]]
+                df_dados = df.reset_index(drop=True)
+
+            if len(df_dados) > 0:
+                df_dados = df_dados.iloc[1:].reset_index(drop=True)
 
         itens = []
-
-        # Remove a primeira linha de dados conforme solicitado (descarta linha de títulos/exemplo)
-        if len(df_dados) > 0:
-            df_dados = df_dados.iloc[1:].reset_index(drop=True)
-
         for idx, row in df_dados.iterrows():
             if pd.isna(row).all():
                 continue
 
             item = {}
             valores_validos = 0
-
-            # Iterate over up to 6 columns (preservando ordem)
             for col_idx, col in enumerate(df_dados.columns[:6]):
                 val = row[col]
                 if pd.notna(val):
@@ -83,28 +99,22 @@ def carregar_itens(caminho_planilha, aba_id=None):
                         item[f'coluna_{col_idx + 1}'] = valor
                         valores_validos += 1
 
-            # Considera como item válido se houver pelo menos 1 valor (mais permissivo)
             if valores_validos >= 1:
                 item['aba'] = nome_aba
                 itens.append(item)
 
-        # Garante que header_names tenha pelo menos o mesmo número de colunas consideradas
         if not header_names:
             header_names = [f'Coluna {i+1}' for i in range(6)]
 
-        # Decidir se mostramos as colunas Quantidade / Teste Realizado (usuario pediu ocultar)
-        # Por enquanto, escondemos essas colunas globalmente conforme instruído
         show_quantity_test = False
-
         return itens, header_names, show_quantity_test
 
-    # Se um aba_id foi solicitado, processa apenas a folha correspondente
+    # --- processamento da aba solicitada ---
     if aba_id:
         info = MAPEAMENTO_ABAS.get(str(aba_id))
         if not info:
             return {'items': [], 'headers': []}
 
-        # Procura o nome da folha que contém o título configurado
         target = info['titulo']
         sheet_name = None
         for nome in xlsx.sheet_names:
@@ -115,15 +125,14 @@ def carregar_itens(caminho_planilha, aba_id=None):
         if not sheet_name:
             return {'items': [], 'headers': [], 'show_quantity_test': False}
 
-        itens, headers, show_quantity_test = processar_sheet(sheet_name)
+        itens, headers, show_quantity_test = processar_sheet(sheet_name, aba_id)
         return {'items': itens, 'headers': headers, 'show_quantity_test': show_quantity_test}
 
-    # Caso contrário, processa todas as folhas mapeadas
     todas_abas = []
     for nome_aba in xlsx.sheet_names:
         for aid, info in MAPEAMENTO_ABAS.items():
-            if info['titulo'] in nome_aba:
-                itens, _, _ = processar_sheet(nome_aba)
+            if info["titulo"] in nome_aba:
+                itens, _, _ = processar_sheet(nome_aba, aid)
                 if itens:
                     todas_abas.extend(itens)
                 break

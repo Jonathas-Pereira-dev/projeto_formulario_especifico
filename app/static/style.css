@@ -1,16 +1,16 @@
 :root {
     /* Tema claro com fundo cinza suave */
-    --bg-primary: #f3f4f6; /* fundo principal: cinza claro */
-    --bg-secondary: #ffffff; /* superfícies/cabeçalhos: branco */
-    --bg-tertiary: #ffffff; /* fundos de cards/tabelas: branco */
-    --text-primary: #0f172a; /* texto escuro */
-    --text-secondary: #475569; /* texto secundário */
-    --accent-color: #0a84ff; /* azul para acentos / botões */
+    --bg-primary: #1e3a8a; /* fundo principal: cinza claro */
+    --bg-secondary: #a124b7; /* superfícies/cabeçalhos: branco */
+    --bg-tertiary: #0d23e8b8; /* fundos de cards/tabelas: branco */
+    --text-primary: #1e293b; /* texto escuro */
+    --text-secondary: #000000; /* texto secundário */
+    --accent-color: #2563eb; /* azul para acentos / botões */
     --accent-hover: #0070e0;
-    --border-color: #e6eef9; /* bordas suaves */
+    --border-color: #4278c0; /* bordas suaves */
     --success-color: #2e7d32;
     --error-color: #d32f2f;
-    --card-bg: #ffffff; /* cards brancos sobre fundo cinza */
+    --card-bg: #120987; /* cards brancos sobre fundo cinza */
     --shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
 }
 
@@ -128,13 +128,13 @@ input[type="text"]:focus {
 
 .radio-group label:hover {
     background: var(--accent-color);
-    color: white;
+    color: rgb(14, 75, 198);
 }
 
 /* Botões */
 button {
     background: var(--accent-color);
-    color: white;
+    color: rgb(19, 86, 187);
     border: none;
     padding: 12px 24px;
     border-radius: 6px;
