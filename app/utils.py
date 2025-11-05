@@ -14,7 +14,7 @@ MAPEAMENTO_ABAS = {
 }
 
 def encontrar_cabecalho(df):
-    """Encontra as linhas de cabeçalho relevantes no DataFrame."""
+    #Encontra as linhas de cabeçalho relevantes no DataFrame
     for idx, row in df.iterrows():
         if row.notna().sum() >= 3:  # Pelo menos 3 colunas não vazias
             valores = [str(val).strip() for val in row if pd.notna(val)]
@@ -53,7 +53,7 @@ def carregar_itens(caminho_planilha, aba_id=None):
         df = pd.read_excel(caminho_planilha, sheet_name=nome_aba)
         cabecalho_idx = encontrar_cabecalho(df)
 
-        # --- ✅ ABA 1 CORRIGIDA: Mantém apenas as colunas necessárias ---
+        # ABA 1
         if aba_id == "1":
             header_names = ["Equipamento", "Quantidade", "Teste Realizado", "OK", "NOK", "Observações / Justificativa"]
 
@@ -67,7 +67,7 @@ def carregar_itens(caminho_planilha, aba_id=None):
                 ~df_dados.iloc[:, 0].astype(str).str.contains("EQUIPAMENTO", case=False, na=False)
             ]
 
-            # ✅ Mantém só as 3 primeiras colunas úteis
+            # Mantém só as 3 primeiras colunas úteis
             df_dados = df_dados.iloc[:, :3]
             df_dados.columns = ["Equipamento", "Quantidade", "Teste Realizado"]
 
@@ -109,7 +109,7 @@ def carregar_itens(caminho_planilha, aba_id=None):
         show_quantity_test = False
         return itens, header_names, show_quantity_test
 
-    # --- processamento da aba solicitada ---
+    # Processamento da aba solicitada
     if aba_id:
         info = MAPEAMENTO_ABAS.get(str(aba_id))
         if not info:

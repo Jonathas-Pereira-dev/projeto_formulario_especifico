@@ -19,7 +19,8 @@ async def pagina_inicial(request: Request):
 @app.get("/formulario/{aba_id}", response_class=HTMLResponse)
 async def exibir_formulario(request: Request, aba_id: str):
     result = carregar_itens(PLANILHA, aba_id)
-    # result is a dict with 'items' and 'headers'
+
+    # O resultado é um dicionário com 'itens' e 'cabeçalhos'.
     itens = result.get('items', []) if isinstance(result, dict) else result
     headers = result.get('headers', []) if isinstance(result, dict) else []
     return templates.TemplateResponse("formulario.html", {"request": request, "itens": itens, "headers": headers, "aba_id": aba_id})
@@ -27,7 +28,7 @@ async def exibir_formulario(request: Request, aba_id: str):
 
 @app.get("/inspecao-visual", response_class=HTMLResponse)
 async def ir_para_inspecao_visual(request: Request):
-    # Atalho para a aba 2 (INSPEÇÃO VISUAL)
+    # Atalho para a aba 2 da planilha principal
     return RedirectResponse(url=f"/formulario/2", status_code=303)
 
 @app.post("/enviar")

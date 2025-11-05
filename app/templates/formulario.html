@@ -6,8 +6,8 @@
     <link rel="stylesheet" href="/static/style.css">
     <style>
         body {
-            background-color: #000000; /* ✅ fundo preto */
-            color: #ffffff; /* texto branco */
+            background-color: #000000; /* preto */
+            color: #ffffff; /* branco */
             font-family: Arial, sans-serif;
         }
 
@@ -119,8 +119,9 @@
         <li><a class="nav-tab {% if aba_id == '4' %}active{% endif %}" href="/formulario/4">4. ATERRAMENTO</a></li>
         <li><a class="nav-tab {% if aba_id == '5' %}active{% endif %}" href="/formulario/5">5. DESEMPENHO DO SISTEMA</a></li>
         <li><a class="nav-tab {% if aba_id == '6' %}active{% endif %}" href="/formulario/6">6. PROCEDIMENTO VERIFICAÇÃO CLP</a></li>
-    </ul>
+    </ul> 
 
+    <!--Formulario principal usando auxilar Jinja2-->
     <form action="/enviar" method="post">
         {% set current_section = namespace(name='') %}
         {% for item in itens %}
