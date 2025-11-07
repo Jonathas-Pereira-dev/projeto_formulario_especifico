@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-# 🔹 Carrega variáveis de ambiente
+# Carrega variáveis de ambiente
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=".env")
 
@@ -22,15 +22,13 @@ from sqlalchemy.orm import sessionmaker
 # Funções utilitárias
 from app.utils import carregar_itens, salvar_resultados, carregar_abas
 
-# ==============================================================
 # CONFIGURAÇÕES GERAIS
-# ==============================================================
 
 SECRET_KEY = os.getenv("SECRET_KEY", "mude_para_producao_gerar_com_openssl")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
-# ✅ Banco de dados automático (Railway ou local)
+# Banco de dados automático (Railway ou local)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL or "railway.internal" in DATABASE_URL:
@@ -44,9 +42,7 @@ COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# ==============================================================
-# 💾 BANCO DE DADOS
-# ==============================================================
+# BANCO DE DADOS
 
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
@@ -65,9 +61,7 @@ class User(Base):
 
 Base.metadata.create_all(bind=engine)
 
-# ==============================================================
-# 🚀 APLICAÇÃO FASTAPI
-# ==============================================================
+# APLICAÇÃO FASTAPI
 
 app = FastAPI(title="Radix - Inspeção (com Auth)")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -75,10 +69,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 PLANILHA = "FT-5.82.AD.BA6XX-403 - ANEXO 1.xlsm"
 
-# ==============================================================
-# 🔑 AUTENTICAÇÃO
-# ==============================================================
-
+# AUTENTICAÇÃO
 
 def get_db():
     db = SessionLocal()
@@ -117,15 +108,11 @@ def decode_token_get_username(token: str) -> Optional[str]:
         return None
 
 
-# ==============================================================
-# 🔐 ROTAS DE LOGIN / REGISTRO
-# ==============================================================
-
+# ROTAS DE LOGIN / REGISTRO
 
 @app.get("/login", response_class=HTMLResponse)
 async def get_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
-
 
 @app.post("/login")
 async def post_login(request: Request, username: str = Form(...), password: str = Form(...)):
@@ -143,11 +130,9 @@ async def post_login(request: Request, username: str = Form(...), password: str 
     )
     return response
 
-
 @app.get("/register", response_class=HTMLResponse)
 async def get_register(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
-
 
 @app.post("/register")
 async def post_register(
@@ -175,7 +160,6 @@ async def post_register(
     db.commit()
     return RedirectResponse(url="/login", status_code=303)
 
-
 @app.get("/logout")
 async def logout():
     response = RedirectResponse(url="/login", status_code=303)
@@ -183,10 +167,7 @@ async def logout():
     return response
 
 
-# ==============================================================
-# 👤 OBTÉM USUÁRIO LOGADO
-# ==============================================================
-
+# OBTÉM USUÁRIO LOGADO
 
 def get_current_user_from_request(request: Request):
     token = request.cookies.get(COOKIE_NAME)
@@ -198,11 +179,7 @@ def get_current_user_from_request(request: Request):
     db = next(get_db())
     return db.query(User).filter(User.username == username).first()
 
-
-# ==============================================================
-# 📄 ROTAS PRINCIPAIS (PROTEGIDAS)
-# ==============================================================
-
+# ROTAS PRINCIPAIS (PROTEGIDAS)
 
 @app.get("/", response_class=HTMLResponse)
 async def pagina_inicial(request: Request):
@@ -213,7 +190,6 @@ async def pagina_inicial(request: Request):
     return templates.TemplateResponse(
         "index.html", {"request": request, "abas": abas, "user": {"username": user.username}}
     )
-
 
 @app.get("/formulario/{aba_id}", response_class=HTMLResponse)
 async def exibir_formulario(request: Request, aba_id: str):
@@ -234,11 +210,9 @@ async def exibir_formulario(request: Request, aba_id: str):
         },
     )
 
-
 @app.get("/inspecao-visual", response_class=HTMLResponse)
 async def ir_para_inspecao_visual(request: Request):
     return RedirectResponse(url="/formulario/2", status_code=303)
-
 
 @app.post("/enviar")
 async def enviar_formulario(request: Request):
