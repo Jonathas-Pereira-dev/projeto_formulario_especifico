@@ -31,11 +31,11 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 # Banco de dados automático (Railway ou local)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-if not DATABASE_URL or "railway.internal" in DATABASE_URL:
-    print("🔸 Usando banco local SQLite (modo desenvolvimento)")
+if not DATABASE_URL or "railway.internal" not in DATABASE_URL:
+    print(" Usando banco local SQLite (modo desenvolvimento)")
     DATABASE_URL = "sqlite:///./users.db"
 else:
-    print(f"🔹 Usando banco remoto: {DATABASE_URL}")
+    print(f" Usando banco remoto: {DATABASE_URL}")
 
 COOKIE_NAME = "access_token"
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
