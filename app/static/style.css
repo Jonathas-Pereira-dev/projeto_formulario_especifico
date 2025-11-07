@@ -1,8 +1,8 @@
 :root {
     /* Tema claro com fundo cinza suave */
-    --bg-primary: #1e3a8a; /* fundo principal: cinza claro */
-    --bg-secondary: #a124b7; /* superfícies/cabeçalhos: branco */
-    --bg-tertiary: #0d23e8b8; /* fundos de cards/tabelas: branco */
+    --bg-primary: #babbbe; /* fundo principal: cinza claro (babbbe) */
+    --bg-secondary: #a124b7; /* superfícies/cabeçalhos: roxo */
+    --bg-tertiary: #babbbe; /* fundos de cards/tabelas: branco */
     --text-primary: #1e293b; /* texto escuro */
     --text-secondary: #000000; /* texto secundário */
     --accent-color: #2563eb; /* azul para acentos / botões */
@@ -10,7 +10,7 @@
     --border-color: #4278c0; /* bordas suaves */
     --success-color: #2e7d32;
     --error-color: #d32f2f;
-    --card-bg: #120987; /* cards brancos sobre fundo cinza */
+    --card-bg: #babbbe; /* cards brancos sobre fundo cinza */
     --shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
 }
 
