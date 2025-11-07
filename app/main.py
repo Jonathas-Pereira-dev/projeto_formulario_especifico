@@ -7,9 +7,13 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-# Carrega variáveis de ambiente
+# Carrega variáveis de ambiente apenas em desenvolvimento
 from dotenv import load_dotenv
-load_dotenv(dotenv_path=".env")
+import os
+
+# Só carrega .env se não estiver no Railway (produção)
+if not os.getenv("RAILWAY_ENVIRONMENT"):
+    load_dotenv(dotenv_path=".env")
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -28,17 +32,18 @@ SECRET_KEY = os.getenv("SECRET_KEY", "mude_para_producao_gerar_com_openssl")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
-# Banco de dados automático (Railway ou local)
+# Banco de dados automático (Railway ou local) - CORRIGIDO
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-if not DATABASE_URL or "railway.internal" in DATABASE_URL:
-    print(" Usando banco local SQLite (modo desenvolvimento)")
+# CORREÇÃO PARA RAILWAY - detecta PostgreSQL corretamente
+if not DATABASE_URL or "postgresql" not in DATABASE_URL:
+    print("🔸 Usando banco local SQLite (modo desenvolvimento)")
     DATABASE_URL = "sqlite:///./users.db"
 else:
-    print(f" Usando banco remoto: {DATABASE_URL}")
+    print(f"🔹 Usando banco PostgreSQL do Railway")
 
 COOKIE_NAME = "access_token"
-COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "true").lower() == "true"  # Alterado para true como padrão
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -58,8 +63,12 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
 
-
-Base.metadata.create_all(bind=engine)
+# CORREÇÃO: Verificação robusta da criação de tabelas
+try:
+    Base.metadata.create_all(bind=engine)
+    print("✅ Tabelas criadas/verificadas com sucesso")
+except Exception as e:
+    print(f"❌ Erro ao criar tabelas: {e}")
 
 # APLICAÇÃO FASTAPI
 
@@ -75,8 +84,15 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+    except Exception as e:
+        print(f"❌ Erro de conexão com banco: {e}")
+        # Em caso de erro, retorna None para evitar quebrar a aplicação
+        yield None
     finally:
-        db.close()
+        try:
+            db.close()
+        except:
+            pass
 
 
 def verify_password(plain_password, hashed_password):
@@ -117,6 +133,12 @@ async def get_login(request: Request):
 @app.post("/login")
 async def post_login(request: Request, username: str = Form(...), password: str = Form(...)):
     db = next(get_db())
+    if db is None:
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "Erro de conexão com o banco de dados"},
+        )
+    
     user = db.query(User).filter(User.username == username).first()
     if not user or not verify_password(password, user.hashed_password):
         return templates.TemplateResponse(
@@ -142,6 +164,12 @@ async def post_register(
     email: str = Form(None),
 ):
     db = next(get_db())
+    if db is None:
+        return templates.TemplateResponse(
+            "register.html",
+            {"request": request, "error": "Erro de conexão com o banco de dados"},
+        )
+    
     existing_user = db.query(User).filter(or_(User.username == username, User.email == email)).first()
     if existing_user:
         return templates.TemplateResponse(
@@ -155,10 +183,17 @@ async def post_register(
             {"request": request, "error": "A senha não pode ultrapassar 72 caracteres."},
         )
 
-    user = User(username=username, email=email, hashed_password=get_password_hash(password))
-    db.add(user)
-    db.commit()
-    return RedirectResponse(url="/login", status_code=303)
+    try:
+        user = User(username=username, email=email, hashed_password=get_password_hash(password))
+        db.add(user)
+        db.commit()
+        return RedirectResponse(url="/login", status_code=303)
+    except Exception as e:
+        db.rollback()
+        return templates.TemplateResponse(
+            "register.html",
+            {"request": request, "error": f"Erro ao criar usuário: {str(e)}"},
+        )
 
 @app.get("/logout")
 async def logout():
@@ -166,6 +201,30 @@ async def logout():
     response.delete_cookie(COOKIE_NAME)
     return response
 
+# ROTAS DE DEBUG - ADICIONE ESTAS NOVAS ROTAS
+@app.get("/debug/db")
+async def debug_database():
+    try:
+        db = next(get_db())
+        if db is None:
+            return {"status": "error", "error": "Não foi possível conectar ao banco"}
+        user_count = db.query(User).count()
+        return {
+            "status": "success", 
+            "database_url": DATABASE_URL,
+            "user_count": user_count,
+            "tables_created": True
+        }
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+@app.get("/debug/env")
+async def debug_env():
+    return {
+        "secret_key_configured": bool(SECRET_KEY and SECRET_KEY != "mude_para_producao_gerar_com_openssl"),
+        "cookie_secure": COOKIE_SECURE,
+        "database_url_configured": bool(DATABASE_URL)
+    }
 
 # OBTÉM USUÁRIO LOGADO
 
@@ -177,6 +236,8 @@ def get_current_user_from_request(request: Request):
     if not username:
         return None
     db = next(get_db())
+    if db is None:
+        return None
     return db.query(User).filter(User.username == username).first()
 
 # ROTAS PRINCIPAIS (PROTEGIDAS)
