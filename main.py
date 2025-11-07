@@ -23,7 +23,7 @@ from sqlalchemy.orm import sessionmaker
 from app.utils import carregar_itens, salvar_resultados, carregar_abas
 
 # ==============================================================
-# 🔧 CONFIGURAÇÕES GERAIS
+# CONFIGURAÇÕES GERAIS
 # ==============================================================
 
 SECRET_KEY = os.getenv("SECRET_KEY", "mude_para_producao_gerar_com_openssl")
