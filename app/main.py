@@ -65,7 +65,7 @@ app = FastAPI(title="Radix - Inspeção (com Auth)")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
-PLANILHA = "planilhas/FT-5.82.AD.BA6XX-403 - ANEXO 1.xlsm"
+PLANILHA = "app/planilhas/FT-5.82.AD.BA6XX-403 - ANEXO 1.xlsm"
 
 # AUTENTICAÇÃO
 def get_db():
