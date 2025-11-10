@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timedelta
 from typing import Optional
+from pathlib import Path
 
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -23,7 +24,6 @@ from sqlalchemy.orm import sessionmaker
 from app.utils import carregar_itens, salvar_resultados, carregar_abas
 
 # CONFIGURAÇÕES GERAIS
-
 SECRET_KEY = os.getenv("SECRET_KEY", "mude_para_producao_gerar_com_openssl")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
@@ -32,10 +32,10 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL or "railway.internal" in DATABASE_URL:
-    print(" Usando banco local SQLite (modo desenvolvimento)")
+    print("💾 Usando banco local SQLite (modo desenvolvimento)")
     DATABASE_URL = "sqlite:///./users.db"
 else:
-    print(f" Usando banco remoto: {DATABASE_URL}")
+    print(f"🌐 Usando banco remoto: {DATABASE_URL}")
 
 COOKIE_NAME = "access_token"
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
@@ -43,7 +43,6 @@ COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # BANCO DE DADOS
-
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
@@ -62,7 +61,6 @@ class User(Base):
 Base.metadata.create_all(bind=engine)
 
 # APLICAÇÃO FASTAPI
-
 app = FastAPI(title="Radix - Inspeção (com Auth)")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
@@ -70,7 +68,6 @@ templates = Jinja2Templates(directory="app/templates")
 PLANILHA = "app/static/planilhas/FT-5.82.AD.BA6XX-403 - ANEXO 1.xlsm"
 
 # AUTENTICAÇÃO
-
 def get_db():
     db = SessionLocal()
     try:
@@ -87,7 +84,6 @@ def verify_password(plain_password, hashed_password):
 
 
 def get_password_hash(password):
-    # bcrypt aceita no máximo 72 bytes — truncamos se exceder
     if len(password) > 72:
         password = password[:72]
     return pwd_context.hash(password)
@@ -109,10 +105,10 @@ def decode_token_get_username(token: str) -> Optional[str]:
 
 
 # ROTAS DE LOGIN / REGISTRO
-
 @app.get("/login", response_class=HTMLResponse)
 async def get_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
+
 
 @app.post("/login")
 async def post_login(request: Request, username: str = Form(...), password: str = Form(...)):
@@ -130,9 +126,11 @@ async def post_login(request: Request, username: str = Form(...), password: str 
     )
     return response
 
+
 @app.get("/register", response_class=HTMLResponse)
 async def get_register(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
+
 
 @app.post("/register")
 async def post_register(
@@ -160,6 +158,7 @@ async def post_register(
     db.commit()
     return RedirectResponse(url="/login", status_code=303)
 
+
 @app.get("/logout")
 async def logout():
     response = RedirectResponse(url="/login", status_code=303)
@@ -168,7 +167,6 @@ async def logout():
 
 
 # OBTÉM USUÁRIO LOGADO
-
 def get_current_user_from_request(request: Request):
     token = request.cookies.get(COOKIE_NAME)
     if not token:
@@ -179,23 +177,35 @@ def get_current_user_from_request(request: Request):
     db = next(get_db())
     return db.query(User).filter(User.username == username).first()
 
-# ROTAS PRINCIPAIS (PROTEGIDAS)
 
+# ROTAS PRINCIPAIS (PROTEGIDAS)
 @app.get("/", response_class=HTMLResponse)
 async def pagina_inicial(request: Request):
     user = get_current_user_from_request(request)
     if not user:
         return RedirectResponse(url="/login", status_code=303)
-    abas = carregar_abas(PLANILHA)
+
+    abas = []
+    if Path(PLANILHA).exists():
+        try:
+            abas = carregar_abas(PLANILHA)
+        except Exception as e:
+            print(f"⚠️ Erro ao carregar planilha: {e}")
+    else:
+        print("⚠️ Planilha não encontrada, seguindo sem abas.")
+
     return templates.TemplateResponse(
-        "index.html", {"request": request, "abas": abas, "user": {"username": user.username}}
+        "index.html",
+        {"request": request, "abas": abas, "user": {"username": user.username}},
     )
+
 
 @app.get("/formulario/{aba_id}", response_class=HTMLResponse)
 async def exibir_formulario(request: Request, aba_id: str):
     user = get_current_user_from_request(request)
     if not user:
         return RedirectResponse(url="/login", status_code=303)
+
     result = carregar_itens(PLANILHA, aba_id)
     itens = result.get("items", []) if isinstance(result, dict) else result
     headers = result.get("headers", []) if isinstance(result, dict) else []
@@ -210,9 +220,11 @@ async def exibir_formulario(request: Request, aba_id: str):
         },
     )
 
+
 @app.get("/inspecao-visual", response_class=HTMLResponse)
 async def ir_para_inspecao_visual(request: Request):
     return RedirectResponse(url="/formulario/2", status_code=303)
+
 
 @app.post("/enviar")
 async def enviar_formulario(request: Request):
