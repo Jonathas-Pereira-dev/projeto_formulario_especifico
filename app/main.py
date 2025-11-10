@@ -32,10 +32,10 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL or "railway.internal" in DATABASE_URL:
-    print("💾 Usando banco local SQLite (modo desenvolvimento)")
+    print(" Usando banco local SQLite (modo desenvolvimento)")
     DATABASE_URL = "sqlite:///./users.db"
 else:
-    print(f"🌐 Usando banco remoto: {DATABASE_URL}")
+    print(f" Usando banco remoto: {DATABASE_URL}")
 
 COOKIE_NAME = "access_token"
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
@@ -65,7 +65,7 @@ app = FastAPI(title="Radix - Inspeção (com Auth)")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
-PLANILHA = "app/static/planilhas/FT-5.82.AD.BA6XX-403 - ANEXO 1.xlsm"
+PLANILHA = "planilhas/FT-5.82.AD.BA6XX-403 - ANEXO 1.xlsm"
 
 # AUTENTICAÇÃO
 def get_db():
@@ -190,9 +190,9 @@ async def pagina_inicial(request: Request):
         try:
             abas = carregar_abas(PLANILHA)
         except Exception as e:
-            print(f"⚠️ Erro ao carregar planilha: {e}")
+            print(f" Erro ao carregar planilha: {e}")
     else:
-        print("⚠️ Planilha não encontrada, seguindo sem abas.")
+        print(" Planilha não encontrada, seguindo sem abas.")
 
     return templates.TemplateResponse(
         "index.html",
