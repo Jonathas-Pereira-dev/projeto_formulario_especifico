@@ -2,173 +2,201 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Checklist de Inspeção</title>
+    <title>Checklist de Inspeção - {{ estacao }}</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
-        body {
-            background-color: #000000; /* preto */
-            color: #ffffff; /* branco */
-            font-family: Arial, sans-serif;
-        }
-
-        .nav-tabs {
-            display: flex;
-            list-style: none;
-            padding: 0;
-            margin: 0 0 20px 0;
-            border-bottom: 2px solid #333;
-            overflow-x: auto;
-        }
-        
+        body { background-color: #000; color: #fff; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        .nav-tabs { display: flex; list-style: none; padding: 0; margin: 0 0 20px 0; border-bottom: 2px solid #333; overflow-x: auto; }
         .nav-tabs li { margin: 0; padding: 0; }
+        .nav-tab { display: block; padding: 12px 20px; color: #fff; text-decoration: none; border: 2px solid transparent; border-bottom: none; border-radius: 4px 4px 0 0; margin-right: 4px; background: #1f1f1f; cursor: pointer; transition: all 0.18s ease; white-space: nowrap; }
+        .nav-tab:hover { background: #333; border-color: #babbbe; }
+        .nav-tab.active { background: #babbbe; color: white; border-color: #babbbe; }
+        .aba-section { background: #121212; color: white; border: 1px solid #333; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #1e1e1e; color: #ffffff; }
+        input[type="text"] { width: 100%; padding: 5px; background: #222; color: #fff; border: 1px solid #555; border-radius: 4px; }
+        button { background-color: #babbbe; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 2px 6px rgba(10,132,255,0.3); margin-top: 20px; }
+        button:hover { background-color: #9a9b9e; }
         
-        .nav-tab {
-            display: block;
-            padding: 12px 20px;
-            color: #ffffff;
-            text-decoration: none;
-            border: 2px solid transparent;
-            border-bottom: none;
-            border-radius: 4px 4px 0 0;
-            margin-right: 4px;
-            background: #1f1f1f;
-            cursor: pointer;
-            transition: all 0.18s ease;
+        /* HEADER MELHORADO */
+        .header-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
         }
-
-        .nav-tab:hover {
-            background: #333333;
-            border-color: #babbbe;
+        .btn-voltar { 
+            background-color: #444; 
+            color: white; 
+            text-decoration: none; 
+            padding: 10px 20px;
+            border-radius: 6px; 
+            border: 1px solid #555;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-
-        .nav-tab.active {
-            background: #babbbe;
-            color: white;
-            border-color: #babbbe;
+        .btn-voltar:hover { 
+            background-color: #666; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
-
-        .aba-section {
-            background: #121212;
-            color: white;
+        .page-title {
+            color: #fff;
+            margin: 0;
+            font-size: 1.8em;
+            text-align: center;
+            flex-grow: 1;
+        }
+        
+        /* CONTAINER PRINCIPAL */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* MENSAGEM DE NENHUM ITEM */
+        .empty-message {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 30px;
+            background: #1a1a1a;
             border: 1px solid #333;
             border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        th, td {
-            border: 1px solid #444;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #1e1e1e;
-            color: #ffffff;
-        }
-
-        .radio-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 5px;
-            background: #222;
             color: #fff;
-            border: 1px solid #555;
-            border-radius: 4px;
+            text-align: center;
         }
-
-        button {
-            background-color: #babbbe;
+        
+        /* BOTÃO SALVAR */
+        .btn-salvar {
+            display: block;
+            margin: 30px auto;
+            background-color: #4CAF50;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 30px;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(10,132,255,0.3);
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
         }
-
-        button:hover {
-            background-color: #babbbe;
+        .btn-salvar:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
         }
     </style>
 </head>
 <body>
-    <h1>Formulário de Inspeção</h1>
-
-    {% if not itens %}
-        <div style="max-width:1000px;margin:20px auto;padding:20px;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff;text-align:center;">
-            <strong>Nenhum item encontrado</strong>
-            <div>Não foram localizados itens para esta aba.</div>
+    <div class="container">
+        <!-- HEADER COM BOTÃO VOLTAR CORRIGIDO -->
+        <div class="header-bar">
+            <a href="/selecao_estacao" class="btn-voltar">
+                <span>←</span>
+                Voltar para Seleção de Estação
+            </a>
+            <h1 class="page-title">Formulário de Inspeção - Estação {{ estacao }} - Aba {{ aba_id }}</h1>
+            <div style="width: 140px;"></div> <!-- Espaçador para alinhamento -->
         </div>
-    {% endif %}
-    
-    <ul class="nav-tabs">
-        <li><a class="nav-tab {% if aba_id == '1' %}active{% endif %}" href="/formulario/1">1. VERIFICAÇÃO E INSPEÇÃO MEC.</a></li>
-        <li><a class="nav-tab {% if aba_id == '2' %}active{% endif %}" href="/formulario/2">2. INSPEÇÃO VISUAL</a></li>
-        <li><a class="nav-tab {% if aba_id == '3' %}active{% endif %}" href="/formulario/3">3. VALIDAÇÃO DE CIRCUITO</a></li>
-        <li><a class="nav-tab {% if aba_id == '4' %}active{% endif %}" href="/formulario/4">4. ATERRAMENTO</a></li>
-        <li><a class="nav-tab {% if aba_id == '5' %}active{% endif %}" href="/formulario/5">5. DESEMPENHO DO SISTEMA</a></li>
-        <li><a class="nav-tab {% if aba_id == '6' %}active{% endif %}" href="/formulario/6">6. PROCEDIMENTO VERIFICAÇÃO CLP</a></li>
-    </ul> 
 
-    <!--Formulario principal usando auxilar Jinja2-->
-    <form action="/enviar" method="post">
-        {% set current_section = namespace(name='') %}
-        {% for item in itens %}
-            {% if item.aba != current_section.name %}
-                {% if current_section.name != '' %}
-                    </table>
-                    </div>
-                {% endif %}
-
-                {% set current_section.name = item.aba %}
-                <div class="aba-section">
-                    <h2>{{ item.aba }}</h2>
-                    <table>
-                        <tr>
-                            <th>Equipamento</th>
-                            <th>Quantidade</th>
-                            <th>Teste Realizado</th>
-                            <th>OK</th>
-                            <th>NOK</th>
-                            <th>Observações / Justificativa</th>
-                        </tr>
-            {% endif %}
-
-            <tr>
-                <td>{{ item.coluna_1 }}</td>
-                <td>{{ item.coluna_2 }}</td>
-                <td>{{ item.coluna_3 }}</td>
-                <td>
-                    <input type="radio" name="status_{{ loop.index }}" value="OK" required>
-                </td>
-                <td>
-                    <input type="radio" name="status_{{ loop.index }}" value="NOK" required>
-                </td>
-                <td>
-                    <input type="text" name="just_{{ loop.index }}" placeholder="Adicione uma justificativa se necessário">
-                    <input type="hidden" name="equipamento_{{ loop.index }}" value="{{ item.coluna_1 }}">
-                    <input type="hidden" name="aba_{{ loop.index }}" value="{{ item.aba }}">
-                </td>
-            </tr>
-        {% endfor %}
-
-        {% if current_section.name != '' %}
-            </table>
+        {% if not itens %}
+            <div class="empty-message">
+                <strong style="font-size: 1.2em;">Nenhum item encontrado</strong>
+                <div style="margin-top: 10px; color: #ccc;">Não foram localizados itens para esta aba.</div>
+                <a href="/selecao_estacao" class="btn-voltar" style="margin-top: 15px;">
+                    ← Voltar para seleção de estação
+                </a>
             </div>
         {% endif %}
 
-        <button type="submit">Salvar Inspeção</button>
-    </form>
+        <!-- ABAS DE NAVEGAÇÃO -->
+        <ul class="nav-tabs">
+            <li><a class="nav-tab {% if aba_id == '1' %}active{% endif %}" href="/formulario_isolado/{{ estacao }}/1">1. VERIFICAÇÃO E INSPEÇÃO MEC.</a></li>
+            <li><a class="nav-tab {% if aba_id == '2' %}active{% endif %}" href="/formulario_isolado/{{ estacao }}/2">2. INSPEÇÃO VISUAL</a></li>
+            <li><a class="nav-tab {% if aba_id == '3' %}active{% endif %}" href="/formulario_isolado/{{ estacao }}/3">3. VALIDAÇÃO DE CIRCUITO</a></li>
+            <li><a class="nav-tab {% if aba_id == '4' %}active{% endif %}" href="/formulario_isolado/{{ estacao }}/4">4. ATERRAMENTO</a></li>
+            <li><a class="nav-tab {% if aba_id == '5' %}active{% endif %}" href="/formulario_isolado/{{ estacao }}/5">5. DESEMPENHO DO SISTEMA</a></li>
+            <li><a class="nav-tab {% if aba_id == '6' %}active{% endif %}" href="/formulario_isolado/{{ estacao }}/6">6. PROCEDIMENTO VERIFICAÇÃO CLP</a></li>
+        </ul>
+
+        {% if itens %}
+        <form action="/enviar" method="post">
+            {% set current_section = namespace(name='') %}
+            {% for item in itens %}
+                {% if item.aba != current_section.name %}
+                    {% if current_section.name != '' %}
+                        </table></div>
+                    {% endif %}
+                    {% set current_section.name = item.aba %}
+                    <div class="aba-section">
+                        <h2>{{ item.aba }}</h2>
+                        <table>
+                            <tr>
+                                {% if aba_id == '1' %}
+                                    <th>Equipamento</th><th>Quantidade</th><th>Teste Realizado</th><th>OK</th><th>NOK</th><th>Observações / Justificativa</th>
+                                {% elif aba_id == '2' %}
+                                    <th>SENSORES</th><th>LOCAL INSTALADO</th><th>TESTE REALIZADO</th><th>OK</th><th>NOK</th><th>OBSERVAÇÕES</th>
+                                {% elif aba_id == '3' %}
+                                    <th>EQUIPAMENTO</th><th>PONTO 1</th><th>TAG P1</th><th>PONTO 2</th><th>TAG P2</th><th>OK</th><th>NOK</th><th>OBSERVAÇÕES</th>
+                                {% elif aba_id == '4' %}
+                                    <th>PONTO DE ATERRAMENTO</th><th>OK</th><th>NOK</th><th>OBSERVAÇÕES</th>
+                                {% elif aba_id == '5' %}
+                                    <th>EQUIPAMENTO</th><th>PONTOS ALIMENTAÇÃO / ATERRAMENTO</th><th>ALIMENTAÇÃO TEÓRICA</th><th>ALIMENTAÇÃO AFERIDA</th><th>OK</th><th>NOK</th><th>OBSERVAÇÕES</th>
+                                {% elif aba_id == '6' %}
+                                    <th>EQUIPAMENTO</th><th>OK</th><th>NOK</th><th>OBSERVAÇÕES</th>
+                                {% endif %}
+                            </tr>
+                {% endif %}
+
+                <tr>
+                    {% if aba_id in ['4', '6'] %}
+                        <td>{{ item.coluna_1 }}</td>
+                        <td><input type="radio" name="status_{{ loop.index }}" value="OK" required></td>
+                        <td><input type="radio" name="status_{{ loop.index }}" value="NOK" required></td>
+                        <td>
+                            <input type="text" name="just_{{ loop.index }}" placeholder="Observações">
+                            <input type="hidden" name="equipamento_{{ loop.index }}" value="{{ item.coluna_1 }}">
+                            <input type="hidden" name="aba_{{ loop.index }}" value="{{ item.aba }}">
+                        </td>
+
+                    {% elif aba_id == '5' %}
+                        <td>{{ item.coluna_1 }}</td><td>{{ item.coluna_2 }}</td><td>{{ item.coluna_3 }}</td>
+                        <td><input type="text" name="alimentacao_aferida_{{ loop.index }}" placeholder="Digite o valor medido"></td>
+                        <td><input type="radio" name="status_{{ loop.index }}" value="OK" required></td>
+                        <td><input type="radio" name="status_{{ loop.index }}" value="NOK" required></td>
+                        <td>
+                            <input type="text" name="just_{{ loop.index }}" placeholder="Observações">
+                            <input type="hidden" name="equipamento_{{ loop.index }}" value="{{ item.coluna_1 }}">
+                            <input type="hidden" name="aba_{{ loop.index }}" value="{{ item.aba }}">
+                        </td>
+
+                    {% else %}
+                        <td>{{ item.coluna_1 }}</td><td>{{ item.coluna_2 }}</td><td>{{ item.coluna_3 }}</td>
+                        {% if aba_id == '3' %}<td>{{ item.coluna_4 }}</td><td>{{ item.coluna_5 }}</td>{% endif %}
+                        <td><input type="radio" name="status_{{ loop.index }}" value="OK" required></td>
+                        <td><input type="radio" name="status_{{ loop.index }}" value="NOK" required></td>
+                        <td>
+                            <input type="text" name="just_{{ loop.index }}" placeholder="Adicione uma justificativa se necessário">
+                            <input type="hidden" name="equipamento_{{ loop.index }}" value="{{ item.coluna_1 }}">
+                            <input type="hidden" name="aba_{{ loop.index }}" value="{{ item.aba }}">
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+
+            {% if current_section.name != '' %}
+                </table></div>
+            {% endif %}
+
+            <button type="submit" class="btn-salvar">💾 Salvar Inspeção</button>
+        </form>
+        {% endif %}
+    </div>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Seleção de Testes - Radix (CPR - Isolado)</title>
+    <title>Nova Inspeção - Radix</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
         :root {
@@ -23,7 +23,7 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             padding: 20px;
             max-width: 1200px;
@@ -40,9 +40,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 200px;
-            text-decoration: none;
-            color: inherit;
+            min-height: 180px;
         }
 
         .grid-item:hover {
@@ -53,30 +51,29 @@
         .grid-item h2 {
             color: var(--primary-color);
             margin: 0 0 15px 0;
-            font-size: 1.5em;
-        }
-
-        .grid-item p {
-            color: var(--text-color);
-            margin: 0 0 20px 0;
-            flex-grow: 1;
+            font-size: 1.4em;
         }
 
         .item-count {
             background: rgba(10, 132, 255, 0.15);
             color: var(--primary-color);
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 15px;
             display: inline-block;
             margin-top: 10px;
             font-size: 0.9em;
             font-weight: 500;
+            text-decoration: none;
+        }
+
+        .item-count:hover {
+            background: rgba(10, 132, 255, 0.25);
         }
 
         .logo-container {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 20px;
+            margin-bottom: 30px;
+            padding: 10px;
         }
 
         .logo-container h1 {
@@ -89,57 +86,30 @@
             color: #cccccc;
             font-size: 1.1em;
         }
-
-        .back-button {
-            display: inline-block;
-            margin-left: 20px;
-            margin-bottom: 10px;
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .back-button:hover {
-            text-decoration: underline;
-        }
-
-        .inspecao-btn {
-            display: block;
-            width: fit-content;
-            margin: 30px auto;
-            background-color: var(--primary-color);
-            color: white;
-            text-decoration: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: background 0.3s ease;
-        }
-
-        .inspecao-btn:hover {
-            background-color: #006fe0;
-        }
     </style>
 </head>
 <body>
-    <a href="/selecao_estacao" class="back-button">← Voltar para Seleção de Estação</a>
-
     <div class="logo-container">
-        <h1>Seleção de Testes - Estação {{ estacao }}</h1>
-        <p>Formulário Isolado</p>
+        <h1>Nova Inspeção - Radix</h1>
+        <p>Selecione a estação e o tipo de formulário</p>
     </div>
 
-    <a href="/inspecao-visual" class="inspecao-btn">Ir para Inspeção Visual</a>
-
     <div class="grid-container">
-        {% for aba in abas %}
-        <a href="/formulario_isolado/{{ estacao }}/{{ aba.id }}" class="grid-item">
+        {% set estacoes = [
+            "CPR", "CPL", "VBE", "GGR", "STA", "LTR", "APN",
+            "ABV", "BGA", "BRK", "CPB", "ECT", "MOE", "SER",
+            "HSP", "SCZ", "CKB", "PCR", "PGC"
+        ] %}
+
+        {% for estacao in estacoes %}
+        <div class="grid-item">
+            <h2>{{ estacao }}</h2>
+            <p>Selecione o tipo de formulário</p>
             <div>
-                <h2>{{ aba.titulo }}</h2>
-                <p>{{ aba.descricao }}</p>
+                <a href="/formulario_campo/{{ estacao }}" class="item-count">Formulário de Campo</a>
+                <a href="/formulario_isolado/{{ estacao }}" class="item-count" style="margin-left:10px;">Formulário Isolado</a>
             </div>
-            <span class="item-count">{{ aba.total_itens }} itens</span>
-        </a>
+        </div>
         {% endfor %}
     </div>
 </body>
