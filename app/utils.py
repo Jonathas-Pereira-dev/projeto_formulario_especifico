@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 MAPEAMENTO_ABAS = {
     "1": {
@@ -41,15 +42,15 @@ MAPEAMENTO_ABAS = {
     }
 }
 
-# Mapeamento para formulário campo
+# Mapeamento para formulário campo - VERIFICADO E CORRETO
 MAPEAMENTO_FORMULARIO_CAMPO = {
     "comunicacao": {
         "aba": "TESTE DE COMUNICAÇÃO ENTRE CLP",
-        "colunas": ["EQUIPAMENTO", "STATUS DO PAINEL", "ITEM DO PT", "OK", "NOK", "OBSERVAÇÕES"]
+        "colunas": ["ESTAÇÃO", "EQUIPAMENTO", "STATUS DO PAINEL", "ITEM DO PT", "OK", "NOK", "OBSERVAÇÕES"]
     },
     "sensores_digitais": {
-        "aba": "TESTES SENSORES DIGITAIS", 
-        "colunas": ["EQUIPAMENTO", "SENSOR", "ITEM DO PT", "ESTADO", "OK", "NOK", "OBSERVAÇÃO"]
+        "aba": "TESTES SENSORES DIGITAIS",
+        "colunas": ["ESTAÇÃO", "EQUIPAMENTO", "SENSOR", "ITEM DO PT", "ESTADO", "OK", "NOK", "OBSERVAÇÃO"]
     },
     "sensores_analogicos": {
         "aba": "SENSORES ANALÓGICOS",
@@ -57,16 +58,14 @@ MAPEAMENTO_FORMULARIO_CAMPO = {
     }
 }
 
-
 def encontrar_cabecalho(df, aba_id=None):
     for idx, row in df.iterrows():
         if row.notna().sum() >= 3:
             valores = [str(val).strip().upper() for val in row if pd.notna(val)]
-            if any(val in ["EQUIPAMENTO", "CIRCUITO", "PONTO", "SISTEMA", "TAG", "SENSOR", "SENSORES", "ATERRAMENTO"]
+            if any(val in ["EQUIPAMENTO", "CIRCUITO", "PONTO", "SISTEMA", "TAG", "SENSOR", "SENSORES", "ATERRAMENTO", "ESTAÇÃO", "ESTACAO"]
                    for val in valores):
                 return idx
     return 0
-
 
 def carregar_abas(caminho_planilha):
     xlsx = pd.ExcelFile(caminho_planilha)
@@ -90,7 +89,6 @@ def carregar_abas(caminho_planilha):
                 break
 
     return sorted(abas_info, key=lambda x: int(x['id']))
-
 
 def carregar_itens(caminho_planilha, aba_id=None):
     xlsx = pd.ExcelFile(caminho_planilha)
@@ -159,7 +157,6 @@ def carregar_itens(caminho_planilha, aba_id=None):
 
     return {'items': todas_abas, 'headers': [], 'show_quantity_test': False}
 
-
 def carregar_formulario_campo(caminho_planilha, estacao):
     """
     Carrega dados do formulário campo filtrando por estação
@@ -167,55 +164,153 @@ def carregar_formulario_campo(caminho_planilha, estacao):
     try:
         dados = {}
         
+        print(f"🎯 INICIANDO CARREGAMENTO PARA ESTAÇÃO: {estacao}")
+        print(f"📁 Planilha: {caminho_planilha}")
+        
+        if not os.path.exists(caminho_planilha):
+            print(f"❌ ARQUIVO NÃO ENCONTRADO: {caminho_planilha}")
+            return {}
+        
+        xlsx = pd.ExcelFile(caminho_planilha)
+        print(f"📑 Abas disponíveis: {xlsx.sheet_names}")
+        
         for tipo, info in MAPEAMENTO_FORMULARIO_CAMPO.items():
-            df = pd.read_excel(caminho_planilha, sheet_name=info["aba"])
-            
-            # Encontrar cabeçalho
-            cabecalho_idx = encontrar_cabecalho(df)
-            
-            if cabecalho_idx is not None and 0 <= cabecalho_idx < len(df):
-                df_dados = df.iloc[cabecalho_idx + 1:].reset_index(drop=True)
-            else:
-                df_dados = df.reset_index(drop=True)
-            
-            # Definir colunas
-            colunas_disponiveis = len(df_dados.columns)
-            colunas_necessarias = len(info["colunas"])
-            
-            if colunas_disponiveis < colunas_necessarias:
-                # Adicionar colunas extras se necessário
-                for i in range(colunas_disponiveis, colunas_necessarias):
-                    df_dados[f"extra_{i}"] = ""
-            
-            df_dados = df_dados.iloc[:, :colunas_necessarias]
-            df_dados.columns = info["colunas"]
-            
-            # Filtrar por estação se a coluna existir
-            if 'ESTAÇÃO' in df_dados.columns:
-                df_filtrado = df_dados[df_dados['ESTAÇÃO'].astype(str).str.upper() == estacao.upper()]
-                df_filtrado = df_filtrado.drop('ESTAÇÃO', axis=1)
-            else:
-                df_filtrado = df_dados
-            
-            # Converter para lista de dicionários
-            itens = []
-            for _, row in df_filtrado.iterrows():
-                if pd.isna(row).all():
+            try:
+                print(f"\n🔍 === PROCESSANDO ABA: {info['aba']} ===")
+                
+                if info['aba'] not in xlsx.sheet_names:
+                    print(f"❌ ABA NÃO ENCONTRADA: {info['aba']}")
+                    dados[tipo] = []
                     continue
-                item = {}
-                for col in df_filtrado.columns:
-                    val = row[col]
-                    item[col] = str(val).strip() if pd.notna(val) else ""
-                itens.append(item)
-            
-            dados[tipo] = itens
+                
+                df = pd.read_excel(caminho_planilha, sheet_name=info["aba"])
+                print(f"✅ Aba carregada - {len(df)} linhas")
+                
+                # ESTRATÉGIA ESPECÍFICA PARA CADA ABA
+                if tipo == "comunicacao":
+                    print("🎯 ESTRATÉGIA PARA COMUNICAÇÃO")
+                    # Linha 1 é o cabeçalho (ESTAÇÃO, EQUIPAMENTO, etc.)
+                    df.columns = df.iloc[1]  # Usar linha 1 como cabeçalho
+                    df = df.iloc[2:].reset_index(drop=True)  # Dados começam na linha 2
+                    
+                elif tipo == "sensores_digitais":
+                    print("🎯 ESTRATÉGIA PARA SENSORES DIGITAIS")
+                    # Procurar linha com "ESTAÇÃO" e "EQUIPAMENTO"
+                    cabecalho_idx = None
+                    for idx, row in df.iterrows():
+                        linha_str = ' '.join([str(cell).upper() for cell in row if pd.notna(cell)])
+                        if "ESTAÇÃO" in linha_str and "EQUIPAMENTO" in linha_str:
+                            cabecalho_idx = idx
+                            break
+                    
+                    if cabecalho_idx is not None:
+                        df.columns = df.iloc[cabecalho_idx]
+                        df = df.iloc[cabecalho_idx + 1:].reset_index(drop=True)
+                    else:
+                        df.columns = df.iloc[0]
+                        df = df.iloc[1:].reset_index(drop=True)
+                        
+                else:  # sensores_analogicos
+                    print("🎯 ESTRATÉGIA PARA SENSORES ANALÓGICOS")
+                    # Procurar linha com "EQUIPAMENTO" e "SENSOR"
+                    cabecalho_idx = None
+                    for idx, row in df.iterrows():
+                        linha_str = ' '.join([str(cell).upper() for cell in row if pd.notna(cell)])
+                        if "EQUIPAMENTO" in linha_str and "SENSOR" in linha_str:
+                            cabecalho_idx = idx
+                            break
+                    
+                    if cabecalho_idx is not None:
+                        df.columns = df.iloc[cabecalho_idx]
+                        df = df.iloc[cabecalho_idx + 1:].reset_index(drop=True)
+                    else:
+                        df.columns = df.iloc[0]
+                        df = df.iloc[1:].reset_index(drop=True)
+                
+                # Remover linhas vazias
+                df = df.dropna(how='all')
+                print(f"📈 Dados processados: {len(df)} linhas")
+                
+                # FILTRAGEM POR ESTAÇÃO
+                if tipo in ["comunicacao", "sensores_digitais"]:
+                    # Encontrar coluna ESTAÇÃO
+                    coluna_estacao = None
+                    for col in df.columns:
+                        if str(col).upper().strip() in ['ESTAÇÃO', 'ESTACAO', 'ESTAÇAO']:
+                            coluna_estacao = col
+                            break
+                    
+                    if coluna_estacao:
+                        print(f"📍 Coluna de estação: '{coluna_estacao}'")
+                        # Padronizar valores
+                        df[coluna_estacao] = df[coluna_estacao].astype(str).str.upper().str.strip()
+                        valores_unicos = df[coluna_estacao].unique()
+                        print(f"📋 Valores únicos: {list(valores_unicos)}")
+                        
+                        # Filtrar por estação
+                        df_filtrado = df[df[coluna_estacao] == estacao.upper()]
+                        print(f"✅ {len(df_filtrado)} linhas para estação {estacao}")
+                        
+                        # Remover coluna ESTAÇÃO
+                        df_filtrado = df_filtrado.drop(coluna_estacao, axis=1)
+                    else:
+                        print("❌ Coluna ESTAÇÃO não encontrada")
+                        df_filtrado = df
+                else:
+                    # Sensores analógicos não tem filtro por estação
+                    df_filtrado = df
+                    print("ℹ️ Sensores analógicos - sem filtro por estação")
+                
+                # PREPARAR COLUNAS FINAIS
+                colunas_necessarias = info["colunas"]
+                
+                # Adicionar colunas faltantes
+                for col in colunas_necessarias:
+                    if col not in df_filtrado.columns:
+                        df_filtrado[col] = ""
+                        print(f"➕ Adicionada coluna: {col}")
+                
+                # Selecionar e ordenar colunas
+                df_filtrado = df_filtrado[colunas_necessarias]
+                
+                # CONVERTER PARA DICIONÁRIOS
+                itens = []
+                for _, row in df_filtrado.iterrows():
+                    if pd.isna(row).all():
+                        continue
+                    
+                    item = {}
+                    for col in df_filtrado.columns:
+                        val = row[col]
+                        item[col] = str(val).strip() if pd.notna(val) else ""
+                    
+                    # Verificar se tem dados válidos
+                    if any(value.strip() for value in item.values() if value):
+                        itens.append(item)
+                
+                print(f"🎉 {len(itens)} itens carregados")
+                if itens:
+                    print(f"📄 Primeiro item: {itens[0]}")
+                dados[tipo] = itens
+                
+            except Exception as e:
+                print(f"❌ Erro na aba {info['aba']}: {e}")
+                import traceback
+                traceback.print_exc()
+                dados[tipo] = []
+        
+        print(f"\n📊 RESUMO FINAL:")
+        print(f"   Comunicação: {len(dados.get('comunicacao', []))} itens")
+        print(f"   Sensores Digitais: {len(dados.get('sensores_digitais', []))} itens")
+        print(f"   Sensores Analógicos: {len(dados.get('sensores_analogicos', []))} itens")
         
         return dados
         
     except Exception as e:
-        print(f"Erro ao carregar formulário campo: {e}")
+        print(f"🚨 ERRO GERAL: {e}")
+        import traceback
+        traceback.print_exc()
         return {}
-
 
 def salvar_resultados(caminho_saida, dados):
     df = pd.DataFrame(dados)
