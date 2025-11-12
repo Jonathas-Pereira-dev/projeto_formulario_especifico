@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário Campo - {{ estacao }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --border-color: #2a2a2a;
+            --primary-color: #0a84ff;
+            --text-color: #e0e0e0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: "Segoe UI", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #cccccc;
+            font-size: 1.1em;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px 20px;
+            border: 1px solid var(--primary-color);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Estilos para abas */
+        .tabs {
+            display: flex;
+            margin-bottom: 0;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--card-bg);
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+        }
+
+        .tab-button {
+            padding: 15px 25px;
+            background: var(--card-bg);
+            border: none;
+            border-right: 1px solid var(--border-color);
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            flex: 1;
+            text-align: center;
+        }
+
+        .tab-button:last-child {
+            border-right: none;
+        }
+
+        .tab-button:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab-button.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 0;
+            background: var(--card-bg);
+            border-radius: 0 0 8px 8px;
+            margin-bottom: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content h2 {
+            background: rgba(10, 132, 255, 0.1);
+            color: var(--primary-color);
+            padding: 20px;
+            margin: 0;
+            font-size: 1.4em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Tabelas */
+        .table-container {
+            overflow-x: auto;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+        }
+
+        th {
+            background: rgba(10, 132, 255, 0.2);
+            color: var(--primary-color);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-color);
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Inputs e radios */
+        input[type="text"] {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 4px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.3);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            transition: background-color 0.3s ease;
+            color: var(--text-color);
+        }
+
+        .radio-group label:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .radio-group input[type="radio"] {
+            margin: 0;
+        }
+
+        /* Botões de ação */
+        .form-actions {
+            margin-top: 30px;
+            text-align: center;
+            padding: 25px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-salvar {
+            background: #28a745;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin: 0 10px;
+        }
+
+        .btn-salvar:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-voltar {
+            background: transparent;
+            color: var(--text-color);
+            padding: 15px 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin: 0 10px;
+            text-decoration: none;
+        }
+
+        .btn-voltar:hover {
+            background: var(--border-color);
+            transform: translateY(-2px);
+        }
+
+        /* Estados vazios */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-state p {
+            font-size: 1.1em;
+            margin: 0;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-button {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .table-container {
+                padding: 10px;
+            }
+            
+            th, td {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .form-actions {
+                padding: 15px;
+            }
+            
+            .btn-salvar, .btn-voltar {
+                display: block;
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/selecao_estacao" class="back-button">← Voltar para Seleção de Estação</a>
+
+        <div class="header">
+            <h1>Formulário Campo - Estação {{ estacao }}</h1>
+            <p>Preencha os dados dos testes de comunicação e sensores</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'comunicacao')">Comunicação entre CLP</button>
+            <button class="tab-button" onclick="openTab(event, 'sensores-digitais')">Sensores Digitais</button>
+            <button class="tab-button" onclick="openTab(event, 'sensores-analogicos')">Sensores Analógicos</button>
+        </div>
+
+        <!-- Aba Comunicação entre CLP -->
+        <div id="comunicacao" class="tab-content active">
+            <h2>TESTE DE COMUNICAÇÃO ENTRE CLP</h2>
+            <div class="table-container">
+                {% if comunicacao %}
+                <form id="form-comunicacao">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>EQUIPAMENTO</th>
+                                <th>STATUS DO PAINEL</th>
+                                <th>ITEM DO PT</th>
+                                <th>OK</th>
+                                <th>NOK</th>
+                                <th>OBSERVAÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in comunicacao %}
+                            <tr>
+                                <td>{{ item.EQUIPAMENTO or '' }}</td>
+                                <td>{{ item['STATUS DO PAINEL'] or '' }}</td>
+                                <td>{{ item['ITEM DO PT'] or '' }}</td>
+                                <td>
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="comunicacao_{{ loop.index }}_status" value="OK">
+                                            OK
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="comunicacao_{{ loop.index }}_status" value="NOK">
+                                            NOK
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="text" name="comunicacao_{{ loop.index }}_observacao" placeholder="Digite as observações...">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </form>
+                {% else %}
+                <div class="empty-state">
+                    <p>Nenhum dado encontrado para esta estação na aba de Comunicação entre CLP</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Aba Sensores Digitais -->
+        <div id="sensores-digitais" class="tab-content">
+            <h2>TESTES SENSORES DIGITAIS</h2>
+            <div class="table-container">
+                {% if sensores_digitais %}
+                <form id="form-sensores-digitais">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>EQUIPAMENTO</th>
+                                <th>SENSOR</th>
+                                <th>ITEM DO PT</th>
+                                <th>ESTADO</th>
+                                <th>OK</th>
+                                <th>NOK</th>
+                                <th>OBSERVAÇÃO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in sensores_digitais %}
+                            <tr>
+                                <td>{{ item.EQUIPAMENTO or '' }}</td>
+                                <td>{{ item.SENSOR or '' }}</td>
+                                <td>{{ item['ITEM DO PT'] or '' }}</td>
+                                <td>{{ item.ESTADO or '' }}</td>
+                                <td>
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="digital_{{ loop.index }}_status" value="OK">
+                                            OK
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="digital_{{ loop.index }}_status" value="NOK">
+                                            NOK
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="text" name="digital_{{ loop.index }}_observacao" placeholder="Digite as observações...">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </form>
+                {% else %}
+                <div class="empty-state">
+                    <p>Nenhum dado encontrado para esta estação na aba de Sensores Digitais</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Aba Sensores Analógicos -->
+        <div id="sensores-analogicos" class="tab-content">
+            <h2>SENSORES ANALÓGICOS</h2>
+            <div class="table-container">
+                {% if sensores_analogicos %}
+                <form id="form-sensores-analogicos">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>EQUIPAMENTO</th>
+                                <th>SENSOR</th>
+                                <th>ITEM DO PT</th>
+                                <th>VALOR PREVISTO</th>
+                                <th>VARIÁVEIS MEDIDAS NO CLP</th>
+                                <th>VARIÁVEIS MEDIDAS NO EPM</th>
+                                <th>OK</th>
+                                <th>NOK</th>
+                                <th>OBSERVAÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in sensores_analogicos %}
+                            <tr>
+                                <td>{{ item.EQUIPAMENTO or '' }}</td>
+                                <td>{{ item.SENSOR or '' }}</td>
+                                <td>{{ item['ITEM DO PT'] or '' }}</td>
+                                <td>{{ item['VALOR PREVISTO'] or '' }}</td>
+                                <td>
+                                    <input type="text" name="analogico_{{ loop.index }}_clp" placeholder="Valor CLP...">
+                                </td>
+                                <td>
+                                    <input type="text" name="analogico_{{ loop.index }}_epm" placeholder="Valor EPM...">
+                                </td>
+                                <td>
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="analogico_{{ loop.index }}_status" value="OK">
+                                            OK
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="analogico_{{ loop.index }}_status" value="NOK">
+                                            NOK
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="text" name="analogico_{{ loop.index }}_observacao" placeholder="Digite as observações...">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </form>
+                {% else %}
+                <div class="empty-state">
+                    <p>Nenhum dado encontrado para esta estação na aba de Sensores Analógicos</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="/selecao_estacao" class="btn-voltar">Voltar</a>
+            <button onclick="salvarFormulario()" class="btn-salvar">Salvar Formulário</button>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tabbuttons;
+            
+            // Esconde todos os conteúdos das abas
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            
+            // Remove a classe active de todos os botões
+            tabbuttons = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tabbuttons.length; i++) {
+                tabbuttons[i].classList.remove("active");
+            }
+            
+            // Mostra a aba atual e adiciona classe active ao botão
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        async function salvarFormulario() {
+            // Coletar dados de todas as abas
+            const dados = {
+                estacao: "{{ estacao }}",
+                usuario: "{{ user.username }}",
+                data: new Date().toISOString(),
+                comunicacao: coletarDadosAba('form-comunicacao'),
+                sensores_digitais: coletarDadosAba('form-sensores-digitais'),
+                sensores_analogicos: coletarDadosAba('form-sensores-analogicos')
+            };
+
+            try {
+                const response = await fetch('/salvar_formulario_campo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                if (response.ok) {
+                    alert('Formulário salvo com sucesso!');
+                    window.location.href = '/selecao_estacao';
+                } else {
+                    const result = await response.json();
+                    alert('Erro ao salvar: ' + (result.message || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                alert('Erro ao salvar formulário: ' + error);
+            }
+        }
+
+        function coletarDadosAba(formId) {
+            const form = document.getElementById(formId);
+            if (!form) return [];
+            
+            const formData = new FormData(form);
+            const dados = {};
+            
+            for (let [key, value] of formData.entries()) {
+                dados[key] = value;
+            }
+            
+            return dados;
+        }
+
+        // Inicialização - garantir que a primeira aba esteja ativa
+        document.addEventListener('DOMContentLoaded', function() {
+            // Já está definido no HTML, mas garantindo
+            document.querySelector('.tab-button.active').click();
+        });
+    </script>
+</body>
+</html>

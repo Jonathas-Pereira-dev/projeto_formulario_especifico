@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Selecionar Estação - Formulário Campo</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --border-color: #2a2a2a;
+            --primary-color: #0a84ff;
+            --text-color: #e0e0e0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: "Segoe UI", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px 20px;
+            border: 1px solid var(--primary-color);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #cccccc;
+            font-size: 1.2em;
+        }
+
+        .estacoes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .btn-estacao {
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 30px 20px;
+            text-decoration: none;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            border: 2px solid var(--border-color);
+            display: block;
+        }
+
+        .btn-estacao:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(10, 132, 255, 0.3);
+            border-color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/selecao_estacao" class="back-button">← Voltar</a>
+
+        <div class="header">
+            <h1>Formulário Campo</h1>
+            <p>Selecione a estação para preencher o formulário</p>
+        </div>
+
+        <div class="estacoes-grid">
+            <a href="/formulario_campo/CPR" class="btn-estacao">CPR</a>
+            <a href="/formulario_campo/CPL" class="btn-estacao">CPL</a>
+            <a href="/formulario_campo/VBE" class="btn-estacao">VBE</a>
+            <a href="/formulario_campo/GGR" class="btn-estacao">GGR</a>
+            <a href="/formulario_campo/STA" class="btn-estacao">STA</a>
+            <a href="/formulario_campo/LTR" class="btn-estacao">LTR</a>
+            <a href="/formulario_campo/APN" class="btn-estacao">APN</a>
+            <a href="/formulario_campo/ABV" class="btn-estacao">ABV</a>
+            <a href="/formulario_campo/BGA" class="btn-estacao">BGA</a>
+            <a href="/formulario_campo/BRK" class="btn-estacao">BRK</a>
+            <a href="/formulario_campo/CPB" class="btn-estacao">CPB</a>
+            <a href="/formulario_campo/ECT" class="btn-estacao">ECT</a>
+            <a href="/formulario_campo/MOE" class="btn-estacao">MOE</a>
+            <a href="/formulario_campo/SER" class="btn-estacao">SER</a>
+            <a href="/formulario_campo/HSP" class="btn-estacao">HSP</a>
+            <a href="/formulario_campo/SCZ" class="btn-estacao">SCZ</a>
+            <a href="/formulario_campo/CKB" class="btn-estacao">CKB</a>
+            <a href="/formulario_campo/PCR" class="btn-estacao">PCR</a>
+            <a href="/formulario_campo/PGC" class="btn-estacao">PGC</a>
+        </div>
+    </div>
+</body>
+</html>

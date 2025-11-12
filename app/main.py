@@ -18,7 +18,7 @@ from sqlalchemy import Column, Integer, String, Boolean, create_engine, or_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from app.utils import carregar_itens, salvar_resultados, carregar_abas
+from app.utils import carregar_itens, salvar_resultados, carregar_abas, carregar_formulario_campo
 
 # =====================================================
 # CONFIGURAÇÕES GERAIS
@@ -65,6 +65,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
 PLANILHA = "app/planilhas/FT-5.82.AD.BA6XX-403 - ANEXO 1.xlsm"
+PLANILHA_CAMPO = "app/planilhas/Geral_Formulario_Campo.xlsx"
 
 # =====================================================
 # FUNÇÕES DE AUTENTICAÇÃO
@@ -172,6 +173,83 @@ async def selecao_estacao(request: Request):
     ]
 
     return templates.TemplateResponse("selecao_estacao.html", {"request": request, "estacoes": estacoes, "user": user})
+
+# =====================================================
+# NOVAS ROTAS PARA FORMULÁRIO CAMPO
+# =====================================================
+@app.get("/selecao_estacao_formulario_campo", response_class=HTMLResponse)
+async def selecao_estacao_formulario_campo(request: Request):
+    user = get_current_user_from_request(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    estacoes = [
+        {"id": "CPR"}, {"id": "CPL"}, {"id": "VBE"}, {"id": "GGR"}, {"id": "STA"},
+        {"id": "LTR"}, {"id": "APN"}, {"id": "ABV"}, {"id": "BGA"}, {"id": "BRK"},
+        {"id": "CPB"}, {"id": "ECT"}, {"id": "MOE"}, {"id": "SER"}, {"id": "HSP"},
+        {"id": "SCZ"}, {"id": "CKB"}, {"id": "PCR"}, {"id": "PGC"},
+    ]
+
+    return templates.TemplateResponse("selecao_estacao_formulario_campo.html", {
+        "request": request, 
+        "estacoes": estacoes, 
+        "user": user
+    })
+
+@app.get("/formulario_campo/{estacao}", response_class=HTMLResponse)
+async def formulario_campo(request: Request, estacao: str):
+    user = get_current_user_from_request(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    try:
+        # Carregar dados das 3 abas do formulário campo
+        dados = carregar_formulario_campo(PLANILHA_CAMPO, estacao)
+        
+        return templates.TemplateResponse("formulario_campo.html", {
+            "request": request,
+            "estacao": estacao,
+            "user": user,
+            "comunicacao": dados.get("comunicacao", []),
+            "sensores_digitais": dados.get("sensores_digitais", []),
+            "sensores_analogicos": dados.get("sensores_analogicos", [])
+        })
+                             
+    except Exception as e:
+        return templates.TemplateResponse("erro.html", {
+            "request": request, 
+            "mensagem": f"Erro ao carregar formulário campo: {str(e)}"
+        })
+
+@app.post("/salvar_formulario_campo")
+async def salvar_formulario_campo(request: Request):
+    user = get_current_user_from_request(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    try:
+        form_data = await request.form()
+        
+        # Processar dados do formulário campo
+        dados_salvar = {
+            "estacao": form_data.get("estacao"),
+            "usuario": user.username,
+            "data": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "comunicacao": [],
+            "sensores_digitais": [],
+            "sensores_analogicos": []
+        }
+        
+        # Aqui você pode processar os dados específicos de cada aba
+        # e salvar no banco de dados ou arquivo
+        
+        return RedirectResponse(url="/selecao_estacao", status_code=303)
+        
+    except Exception as e:
+        return templates.TemplateResponse("erro.html", {
+            "request": request, 
+            "mensagem": f"Erro ao salvar formulário: {str(e)}"
+        })
 
 # =====================================================
 # FORMULÁRIOS (FLUXO CPR)

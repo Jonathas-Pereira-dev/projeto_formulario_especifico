@@ -119,6 +119,32 @@
         .inspecao-btn:hover {
             background-color: #006fe0;
         }
+
+        /* Novos estilos para o botão do formulário campo */
+        .formulario-campo-btn {
+            display: block;
+            width: fit-content;
+            margin: 20px auto;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .formulario-campo-btn:hover {
+            background-color: #218838;
+        }
+
+        .botoes-superiores {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
@@ -129,7 +155,10 @@
         <p>Formulário Isolado</p>
     </div>
 
-    <a href="/inspecao-visual" class="inspecao-btn">Ir para Inspeção Visual</a>
+    <div class="botoes-superiores">
+        <a href="/inspecao-visual" class="inspecao-btn">Ir para Inspeção Visual</a>
+        <a href="/selecao_estacao_formulario_campo" class="formulario-campo-btn">Formulário Campo</a>
+    </div>
 
     <div class="grid-container">
         {% for aba in abas %}

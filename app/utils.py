@@ -41,6 +41,22 @@ MAPEAMENTO_ABAS = {
     }
 }
 
+# Mapeamento para formulário campo
+MAPEAMENTO_FORMULARIO_CAMPO = {
+    "comunicacao": {
+        "aba": "TESTE DE COMUNICAÇÃO ENTRE CLP",
+        "colunas": ["EQUIPAMENTO", "STATUS DO PAINEL", "ITEM DO PT", "OK", "NOK", "OBSERVAÇÕES"]
+    },
+    "sensores_digitais": {
+        "aba": "TESTES SENSORES DIGITAIS", 
+        "colunas": ["EQUIPAMENTO", "SENSOR", "ITEM DO PT", "ESTADO", "OK", "NOK", "OBSERVAÇÃO"]
+    },
+    "sensores_analogicos": {
+        "aba": "SENSORES ANALÓGICOS",
+        "colunas": ["EQUIPAMENTO", "SENSOR", "ITEM DO PT", "VALOR PREVISTO", "VARIÁVEIS MEDIDAS NO CLP", "VARIÁVEIS MEDIDAS NO EPM", "OK", "NOK", "OBSERVAÇÕES"]
+    }
+}
+
 
 def encontrar_cabecalho(df, aba_id=None):
     for idx, row in df.iterrows():
@@ -142,6 +158,63 @@ def carregar_itens(caminho_planilha, aba_id=None):
                 break
 
     return {'items': todas_abas, 'headers': [], 'show_quantity_test': False}
+
+
+def carregar_formulario_campo(caminho_planilha, estacao):
+    """
+    Carrega dados do formulário campo filtrando por estação
+    """
+    try:
+        dados = {}
+        
+        for tipo, info in MAPEAMENTO_FORMULARIO_CAMPO.items():
+            df = pd.read_excel(caminho_planilha, sheet_name=info["aba"])
+            
+            # Encontrar cabeçalho
+            cabecalho_idx = encontrar_cabecalho(df)
+            
+            if cabecalho_idx is not None and 0 <= cabecalho_idx < len(df):
+                df_dados = df.iloc[cabecalho_idx + 1:].reset_index(drop=True)
+            else:
+                df_dados = df.reset_index(drop=True)
+            
+            # Definir colunas
+            colunas_disponiveis = len(df_dados.columns)
+            colunas_necessarias = len(info["colunas"])
+            
+            if colunas_disponiveis < colunas_necessarias:
+                # Adicionar colunas extras se necessário
+                for i in range(colunas_disponiveis, colunas_necessarias):
+                    df_dados[f"extra_{i}"] = ""
+            
+            df_dados = df_dados.iloc[:, :colunas_necessarias]
+            df_dados.columns = info["colunas"]
+            
+            # Filtrar por estação se a coluna existir
+            if 'ESTAÇÃO' in df_dados.columns:
+                df_filtrado = df_dados[df_dados['ESTAÇÃO'].astype(str).str.upper() == estacao.upper()]
+                df_filtrado = df_filtrado.drop('ESTAÇÃO', axis=1)
+            else:
+                df_filtrado = df_dados
+            
+            # Converter para lista de dicionários
+            itens = []
+            for _, row in df_filtrado.iterrows():
+                if pd.isna(row).all():
+                    continue
+                item = {}
+                for col in df_filtrado.columns:
+                    val = row[col]
+                    item[col] = str(val).strip() if pd.notna(val) else ""
+                itens.append(item)
+            
+            dados[tipo] = itens
+        
+        return dados
+        
+    except Exception as e:
+        print(f"Erro ao carregar formulário campo: {e}")
+        return {}
 
 
 def salvar_resultados(caminho_saida, dados):
